@@ -16,15 +16,21 @@ export const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Updated to include the 'admin' role as shown in the instructions
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        role: "admin" // Added from source
       }
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Updated response to include the user object
+    res.status(201).json({ 
+      message: "User registered successfully",
+      user // Added from source
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -55,7 +61,16 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    res.json({ token });
+    // Sending back the token as well as user details often helps the frontend
+    res.json({ 
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
