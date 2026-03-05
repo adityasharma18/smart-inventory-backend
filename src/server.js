@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 // 1. Route and Middleware Imports
 import authRoutes from "./routes/auth.routes.js";
 import productRoutes from "./routes/product.routes.js";
-import dashboardRoutes from "./routes/dashboard.routes.js"; // Added from Step 13
+import dashboardRoutes from "./routes/dashboard.routes.js"; 
 import { verifyToken } from "./middleware/auth.middleware.js";
 
 dotenv.config();
@@ -13,13 +13,21 @@ dotenv.config();
 const app = express();
 
 // 2. Standard Middleware
-app.use(cors());
+// Updated CORS configuration based on your instructions
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://smart-inventory-frontend.vercel.app"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 // 3. Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
-app.use("/api/dashboard", dashboardRoutes); // Added from Step 13
+app.use("/api/dashboard", dashboardRoutes);
 
 // 4. Protected Route
 app.get("/api/protected", verifyToken, (req, res) => {
