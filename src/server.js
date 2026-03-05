@@ -10,16 +10,20 @@ import { verifyToken } from "./middleware/auth.middleware.js";
 
 dotenv.config();
 
+// ... existing imports ...
+
 const app = express();
 
 // 2. Standard Middleware
-// Updated CORS configuration based on your instructions
+// Updated CORS to include specific methods and headers for production
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "https://smart-inventory-frontend.vercel.app"
   ],
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"] // Allowed custom headers
 }));
 
 app.use(express.json());
