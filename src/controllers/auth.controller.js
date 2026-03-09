@@ -32,10 +32,14 @@ export const register = async (req, res) => {
       user // Added from source
     });
 
-  } catch (error) {
-  console.error("LOGIN ERROR:", error);
-  res.status(500).json({ message: "Server error", error: error.message });
   }
+  catch (error) {
+  console.error("LOGIN ERROR:", error);
+  res.status(500).json({
+    message: "Server error",
+    error: error.message
+  });
+}
 };
 
 export const login = async (req, res) => {
