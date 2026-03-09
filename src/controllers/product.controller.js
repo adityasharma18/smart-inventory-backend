@@ -5,14 +5,15 @@ import prisma from "../config/prisma.js";
 =================================*/
 export const addProduct = async (req, res) => {
   try {
+
     const { name, sku, price, quantity, category } = req.body;
 
     const product = await prisma.product.create({
       data: {
         name,
         sku,
-        price,
-        quantity,
+        price: Number(price),
+        quantity: Number(quantity),
         category,
         userId: req.user.userId
       }
@@ -28,8 +29,6 @@ export const addProduct = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
 /* ===============================
    Get Products (User specific)
 =================================*/
