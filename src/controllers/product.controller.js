@@ -1,10 +1,11 @@
 import prisma from "../config/prisma.js";
 
-// Create a new product
+/* ===============================
+   Add Product
+=================================*/
 export const addProduct = async (req, res) => {
   try {
     const { name, sku, price, quantity, category } = req.body;
-    const userId = req.user.userId;
 
     const product = await prisma.product.create({
       data: {
@@ -13,42 +14,63 @@ export const addProduct = async (req, res) => {
         price,
         quantity,
         category,
-        userId
+        userId: req.user.userId
       }
     });
 
-    res.status(201).json(product);
+    res.status(201).json({
+      message: "Product added successfully",
+      product
+    });
+
   } catch (error) {
+    console.error("ADD PRODUCT ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get all products for the logged-in user (ordered by newest first)
+
+/* ===============================
+   Get Products (User specific)
+=================================*/
 export const getProducts = async (req, res) => {
   try {
+
     const products = await prisma.product.findMany({
       where: {
-        userId: req.user.userId // Filter for current user
+        userId: req.user.userId
       },
       orderBy: {
-        createdAt: "desc" // Keep the newest-first sorting
+        createdAt: "desc"
       }
     });
 
     res.status(200).json(products);
+
   } catch (error) {
-    res.status(500).json({ message: "Error fetching products", error: error.message });
+    console.error("GET PRODUCTS ERROR:", error);
+    res.status(500).json({
+      message: "Error fetching products",
+      error: error.message
+    });
   }
 };
 
-// Update an existing product
+
+/* ===============================
+   Update Product
+=================================*/
 export const updateProduct = async (req, res) => {
   try {
+
     const { id } = req.params;
     const { name, price, quantity, category } = req.body;
 
-    const updatedProduct = await prisma.product.update({
-      where: { id },
+    const updated = await prisma.product.updateMany({
+      where: {
+        id,
+        userId: req.user.userId
+      },
       data: {
         name,
         price,
@@ -57,44 +79,77 @@ export const updateProduct = async (req, res) => {
       }
     });
 
-    res.json(updatedProduct);
+    if (updated.count === 0) {
+      return res.status(404).json({
+        message: "Product not found or not authorized"
+      });
+    }
+
+    res.json({
+      message: "Product updated successfully"
+    });
+
   } catch (error) {
+    console.error("UPDATE PRODUCT ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Delete a product
+
+/* ===============================
+   Delete Product
+=================================*/
 export const deleteProduct = async (req, res) => {
   try {
+
     const { id } = req.params;
 
-   await prisma.product.deleteMany({
-  where: {
-    id,
-    userId: req.user.userId
-  }
-});
+    const deleted = await prisma.product.deleteMany({
+      where: {
+        id,
+        userId: req.user.userId
+      }
+    });
 
-    res.json({ message: "Product deleted successfully" });
+    if (deleted.count === 0) {
+      return res.status(404).json({
+        message: "Product not found or not authorized"
+      });
+    }
+
+    res.json({
+      message: "Product deleted successfully"
+    });
+
   } catch (error) {
+    console.error("DELETE PRODUCT ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// STEP 7 — Low Stock Alert System
-// This returns products where stock is <= 5
+
+/* ===============================
+   Low Stock Products
+=================================*/
 export const getLowStockProducts = async (req, res) => {
   try {
+
     const lowStock = await prisma.product.findMany({
       where: {
+        userId: req.user.userId,
         quantity: {
           lte: 5
         }
+      },
+      orderBy: {
+        quantity: "asc"
       }
     });
 
     res.json(lowStock);
+
   } catch (error) {
+    console.error("LOW STOCK ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };
