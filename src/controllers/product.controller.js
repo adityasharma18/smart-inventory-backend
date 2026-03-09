@@ -4,6 +4,7 @@ import prisma from "../config/prisma.js";
 export const addProduct = async (req, res) => {
   try {
     const { name, sku, price, quantity, category } = req.body;
+    const userId = req.user.userId;
 
     const product = await prisma.product.create({
       data: {
@@ -11,7 +12,8 @@ export const addProduct = async (req, res) => {
         sku,
         price,
         quantity,
-        category
+        category,
+        userId
       }
     });
 
@@ -21,18 +23,21 @@ export const addProduct = async (req, res) => {
   }
 };
 
-// Get all products (ordered by newest first)
+// Get all products for the logged-in user (ordered by newest first)
 export const getProducts = async (req, res) => {
   try {
     const products = await prisma.product.findMany({
+      where: {
+        userId: req.user.userId // Filter for current user
+      },
       orderBy: {
-        createdAt: "desc"
+        createdAt: "desc" // Keep the newest-first sorting
       }
     });
 
-    res.json(products);
+    res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Error fetching products", error: error.message });
   }
 };
 
@@ -63,9 +68,12 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.product.delete({
-      where: { id }
-    });
+   await prisma.product.deleteMany({
+  where: {
+    id,
+    userId: req.user.userId
+  }
+});
 
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
